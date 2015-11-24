@@ -15,8 +15,8 @@ class PostgresToRedshift
   attr_reader :source_connection, :target_connection, :s3
 
   def self.reset_connections
-    @source_connection.try(:close) if @source_connection
-    @target_connection.try(:close) if @target_connection
+    @source_connection.close if @source_connection
+    @target_connection.close if @target_connection
 
     @source_connection = nil
     @target_connection = nil
@@ -47,7 +47,7 @@ class PostgresToRedshift
   end
 
   def self.source_connection
-    unless instance_variable_defined?(:"@source_connection")
+    if @source_connection.nil?
       @source_connection = PG::Connection.new(host: source_uri.host, port: source_uri.port, user: source_uri.user || ENV['USER'], password: source_uri.password, dbname: source_uri.path[1..-1])
       @source_connection.exec("SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY;")
     end
@@ -56,7 +56,7 @@ class PostgresToRedshift
   end
 
   def self.target_connection
-    unless instance_variable_defined?(:"@target_connection")
+    if @target_connection.nil?
       @target_connection = PG::Connection.new(host: target_uri.host, port: target_uri.port, user: target_uri.user || ENV['USER'], password: target_uri.password, dbname: target_uri.path[1..-1])
     end
 
