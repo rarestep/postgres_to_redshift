@@ -14,6 +14,14 @@ class PostgresToRedshift
 
   attr_reader :source_connection, :target_connection, :s3
 
+  def self.reset_connections
+    @source_connection.try(:close) if @source_connection
+    @target_connection.try(:close) if @target_connection
+
+    @source_connection = nil
+    @target_connection = nil
+  end
+
   def self.update_tables
     update_tables = PostgresToRedshift.new
 
