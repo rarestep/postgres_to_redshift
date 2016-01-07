@@ -75,13 +75,16 @@ class PostgresToRedshift::Column
   end
 
   def data_type_for_copy
-    numeric_scale = attributes["numeric_scale"]
+    data_type_adjusted = data_type
+
     numeric_precision = attributes["numeric_precision"]
+    numeric_scale = attributes["numeric_scale"]
     if (data_type == 'numeric' && numeric_scale && numeric_precision)
-      data_type = "NUMERIC(#{numeric_precision}, #{numeric_scale})"
+      data_type_adjusted = "NUMERIC(#{numeric_precision},#{numeric_scale})"
     end
 
-    CAST_TYPES_FOR_COPY[data_type] || data_type
+
+    CAST_TYPES_FOR_COPY[data_type_adjusted] || data_type_adjusted
   end
 
   private
