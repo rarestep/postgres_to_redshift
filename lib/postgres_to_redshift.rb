@@ -9,7 +9,7 @@ require "postgres_to_redshift/column"
 
 class PostgresToRedshift
   class << self
-    attr_accessor :source_uri, :target_uri, :target_schema
+    attr_accessor :source_uri, :target_uri, :target_schema, :target_tables
   end
 
   attr_reader :source_connection, :target_connection, :s3
@@ -72,12 +72,14 @@ class PostgresToRedshift
   end
 
   def tables
-    source_connection.exec("SELECT * FROM information_schema.tables WHERE table_schema = 'public' AND table_type in ('BASE TABLE', 'VIEW')").map do |table_attributes|
-      table = Table.new(attributes: table_attributes)
-      next if table.name =~ /^pg_/
-      table.columns = column_definitions(table)
-      table
-    end.compact
+    tables = source_connection.exec("SELECT * FROM information_schema.tables WHERE table_schema = 'public' AND table_type in ('BASE TABLE', 'VIEW')").
+      map { |table_attributes| Table.new(attributes: table_attributes) }.
+      reject { |table| table.name =~ /^pg_/ }
+
+    tables = tables.reject { |table| self.class.target_tables.include?(table.name) } if self.class.target_tables
+
+    tables.each { |table| table.columns = column_definitions(table) }
+    tables
   end
 
   def column_definitions(table)
