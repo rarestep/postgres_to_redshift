@@ -76,7 +76,7 @@ class PostgresToRedshift
       map { |table_attributes| Table.new(attributes: table_attributes) }.
       reject { |table| table.name =~ /^pg_/ }
 
-    tables = tables.reject { |table| self.class.target_tables.include?(table.name) } if self.class.target_tables
+    tables = tables.select { |table| self.class.target_tables.include?(table.name) } if self.class.target_tables
 
     tables.each { |table| table.columns = column_definitions(table) }
     tables
