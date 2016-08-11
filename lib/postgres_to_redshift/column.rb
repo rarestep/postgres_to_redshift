@@ -54,7 +54,7 @@ class PostgresToRedshift::Column
     "oid" => "CHARACTER VARYING(65535)",
     "inet" => "CHARACTER VARYING(65535)",
     "array" => "CHARACTER VARYING(65535)"
-  }
+    }
 
   def initialize(attributes: )
     self.attributes = attributes
