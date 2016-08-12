@@ -127,7 +127,7 @@ class PostgresToRedshift
 
     target_connection.exec("CREATE TABLE #{PostgresToRedshift.target_schema}.#{table.target_table_name} (#{table.columns_for_create})")
 
-    target_connection.exec("COPY #{PostgresToRedshift.target_schema}.#{table.target_table_name} FROM 's3://#{ENV['S3_DATABASE_EXPORT_BUCKET']}/export/#{table.target_table_name}.psv.gz' CREDENTIALS 'aws_access_key_id=#{ENV['S3_DATABASE_EXPORT_ID']};aws_secret_access_key=#{ENV['S3_DATABASE_EXPORT_KEY']}' CSV GZIP TRUNCATECOLUMNS DELIMITER as '|';")
+    target_connection.exec("COPY #{PostgresToRedshift.target_schema}.#{table.target_table_name} FROM 's3://#{ENV['S3_DATABASE_EXPORT_BUCKET']}/export/#{table.target_table_name}.psv.gz' CREDENTIALS 'aws_access_key_id=#{ENV['S3_DATABASE_EXPORT_ID']};aws_secret_access_key=#{ENV['S3_DATABASE_EXPORT_KEY']}' CSV GZIP TRUNCATECOLUMNS DELIMITER as '|' timeformat 'YYYY-MM-DDTHH:MI:SS';")
 
     target_connection.exec("COMMIT;")
   end
