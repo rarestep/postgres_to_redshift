@@ -86,7 +86,7 @@ class PostgresToRedshift::Column
     end
 
 
-    CAST_TYPES_FOR_COPY[data_type_adjusted] || data_type_adjusted
+    CAST_TYPES_FOR_COPY[data_type_adjusted.downcase] || data_type_adjusted
   end
 
   private
