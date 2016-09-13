@@ -172,7 +172,7 @@ RSpec.describe PostgresToRedshift::Column do
         "ordinal_position"         => "2",
         "column_default"           => nil,
         "is_nullable"              => "YES",
-        "data_type"                => "array",
+        "data_type"                => "ARRAY",
       }
 
       column = PostgresToRedshift::Column.new attributes: attributes
