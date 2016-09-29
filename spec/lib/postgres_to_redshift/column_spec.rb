@@ -179,6 +179,22 @@ RSpec.describe PostgresToRedshift::Column do
       expect(column.data_type_for_copy).to eq("CHARACTER VARYING(65535)")
     end
 
+    it 'casts uuid to character varying' do
+      attributes = {
+        "table_catalog"            => "postgres_to_redshift",
+        "table_schema"             => "public",
+        "table_name"               => "films",
+        "column_name"              => "unique_id",
+        "ordinal_position"         => "2",
+        "column_default"           => nil,
+        "is_nullable"              => "YES",
+        "data_type"                => "UUID",
+      }
+
+      column = PostgresToRedshift::Column.new attributes: attributes
+      expect(column.data_type_for_copy).to eq("CHARACTER VARYING(65535)")
+    end
+
     it "returns the data type if no cast necessary" do
       attributes = {
         "table_catalog"            => "postgres_to_redshift",

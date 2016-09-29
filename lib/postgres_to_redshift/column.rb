@@ -53,7 +53,8 @@ class PostgresToRedshift::Column
     "money" => "DECIMAL(19,2)",
     "oid" => "CHARACTER VARYING(65535)",
     "inet" => "CHARACTER VARYING(65535)",
-    "array" => "CHARACTER VARYING(65535)"
+    "array" => "CHARACTER VARYING(65535)",
+    "uuid" => "CHARACTER VARYING(65535)",
     }
 
   def initialize(attributes: )
