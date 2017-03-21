@@ -10,6 +10,15 @@ require "postgres_to_redshift/column"
 class PostgresToRedshift
   class << self
     attr_accessor :source_uri, :target_uri, :target_schema, :target_tables
+    attr_writer :dist_keys, :sort_keys
+
+    def dist_keys
+      @dist_keys ||= {}
+    end
+
+    def sort_keys
+      @sort_keys ||= {}
+    end
   end
 
   attr_reader :source_connection, :target_connection, :s3
@@ -26,7 +35,12 @@ class PostgresToRedshift
     update_tables = PostgresToRedshift.new
 
     update_tables.tables.each do |table|
-      target_connection.exec("CREATE TABLE IF NOT EXISTS #{self.target_schema}.#{table.target_table_name} (#{table.columns_for_create})")
+      target_connection.exec <<-SQL
+        CREATE TABLE IF NOT EXISTS #{self.target_schema}.#{table.target_table_name}
+        (#{table.columns_for_create})
+        #{table.dist_key_for_create}
+        #{table.sort_keys_for_create}
+      SQL
 
       update_tables.copy_table(table)
 
@@ -73,7 +87,7 @@ class PostgresToRedshift
 
   def tables
     tables = source_connection.exec("SELECT * FROM information_schema.tables WHERE table_schema = 'public' AND table_type in ('BASE TABLE', 'VIEW')").
-      map { |table_attributes| Table.new(attributes: table_attributes) }.
+      map { |table_attributes| Table.new(attributes: table_attributes, dist_keys: self.class.dist_keys, sort_keys: self.class.sort_keys) }.
       reject { |table| table.name =~ /^pg_/ }
 
     tables = tables.select { |table| self.class.target_tables.include?(table.name) } if self.class.target_tables

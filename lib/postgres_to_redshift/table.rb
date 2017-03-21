@@ -15,9 +15,11 @@ class PostgresToRedshift
   class Table
     attr_accessor :attributes, :columns
 
-    def initialize(attributes: , columns: [])
+    def initialize(attributes: , columns: [], dist_keys: {}, sort_keys: {})
       self.attributes = attributes
       self.columns = columns
+      @dist_key = dist_keys.fetch(name, nil)
+      @sort_keys = sort_keys.fetch(name, [])
     end
 
     def name
@@ -39,6 +41,18 @@ class PostgresToRedshift
       columns.map do |column|
         %Q["#{column.name}" #{column.data_type_for_copy}]
       end.join(", ")
+    end
+
+    def dist_key_for_create
+      return '' unless @dist_key
+      return '' unless columns.map(&:name).include?(@dist_key)
+      " DISTSTYLE KEY DISTKEY (#{@dist_key})"
+    end
+
+    def sort_keys_for_create
+      valid_sort_keys = @sort_keys.select { |column| columns.map(&:name).include?(column) }
+      return '' unless valid_sort_keys.any?
+      " SORTKEY (#{valid_sort_keys.join(', ')})"
     end
 
     def columns_for_copy
