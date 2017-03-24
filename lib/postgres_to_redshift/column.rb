@@ -46,6 +46,8 @@
 class PostgresToRedshift::Column
   attr_accessor :attributes
 
+  ARRAY_TYPE = 'array'.freeze
+
   CAST_TYPES_FOR_COPY = {
     "text" => "CHARACTER VARYING(65535)",
     "json" => "CHARACTER VARYING(65535)",
@@ -55,7 +57,7 @@ class PostgresToRedshift::Column
     "inet" => "CHARACTER VARYING(65535)",
     "array" => "CHARACTER VARYING(65535)",
     "uuid" => "CHARACTER VARYING(65535)",
-    }
+  }
 
   def initialize(attributes: )
     self.attributes = attributes
@@ -66,7 +68,9 @@ class PostgresToRedshift::Column
   end
 
   def name_for_copy
-    if needs_type_cast?
+    if data_type.downcase == ARRAY_TYPE
+      %Q[CAST(array_to_json("#{name}") AS #{data_type_for_copy}) AS #{name}]
+    elsif needs_type_cast?
       %Q[CAST("#{name}" AS #{data_type_for_copy}) AS #{name}]
     else
       %Q["#{name}"]
