@@ -109,7 +109,7 @@ class PostgresToRedshift
   end
 
   def copy_table(table)
-    buffer = StringIO.new
+    buffer = Tempfile.new
     zip = Zlib::GzipWriter.new(buffer)
 
     puts "Downloading #{table}"
@@ -122,13 +122,13 @@ class PostgresToRedshift
     end
     zip.finish
     buffer.rewind
-    upload_table(table, buffer)
+    upload_table(table, buffer.path)
   end
 
-  def upload_table(table, buffer)
+  def upload_table(table, path)
     puts "Uploading #{table.target_table_name}"
     bucket.objects["export/#{table.target_table_name}.psv.gz"].delete
-    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(buffer, acl: :authenticated_read)
+    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(file: path, acl: :authenticated_read)
   end
 
   def import_table(table)
