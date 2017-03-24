@@ -163,7 +163,7 @@ RSpec.describe PostgresToRedshift::Column do
       expect(column.data_type_for_copy).to eq("CHARACTER VARYING(65535)")
     end
 
-    it 'casts array to character varying' do
+    it 'casts array to character varying, as JSON' do
       attributes = {
         "table_catalog"            => "postgres_to_redshift",
         "table_schema"             => "public",
@@ -177,6 +177,9 @@ RSpec.describe PostgresToRedshift::Column do
 
       column = PostgresToRedshift::Column.new attributes: attributes
       expect(column.data_type_for_copy).to eq("CHARACTER VARYING(65535)")
+      expect(column.name_for_copy).to eq(
+        %q{CAST(array_to_json("description") AS CHARACTER VARYING(65535)) AS description}
+      )
     end
 
     it 'casts uuid to character varying' do
