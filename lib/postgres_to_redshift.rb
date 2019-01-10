@@ -31,10 +31,11 @@ class PostgresToRedshift
     @target_connection = nil
   end
 
-  def self.update_tables
+  def self.update_tables(tables_to_sync = [])
     update_tables = PostgresToRedshift.new
 
     update_tables.tables.each do |table|
+      next unless tables_to_sync.any? && tables_to_sync.include?(table.to_s)
       target_connection.exec <<-SQL
         CREATE TABLE IF NOT EXISTS #{self.target_schema}.#{table.target_table_name}
         (#{table.columns_for_create})
