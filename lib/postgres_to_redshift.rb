@@ -129,7 +129,7 @@ class PostgresToRedshift
   def upload_table(table, path)
     puts "Uploading #{table.target_table_name}"
     bucket.objects["export/#{table.target_table_name}.psv.gz"].delete
-    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(file: path, acl: :authenticated_read)
+    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(file: path, multipart_threshold: 900 * 1024 * 1024)
   end
 
   def import_table(table)
