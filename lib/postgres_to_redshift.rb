@@ -97,7 +97,7 @@ class PostgresToRedshift
   end
 
   def column_definitions(table)
-    source_connection.exec("SELECT * FROM information_schema.columns WHERE table_schema='public' AND table_name='#{table.name}' order by ordinal_position")
+    source_connection.exec("SELECT * FROM information_schema.columns WHERE table_schema='public' AND table_name='#{table.name}' and data_type != 'json' and data_type != 'USER-DEFINED' and data_type != 'jsonb' order by ordinal_position")
   end
 
   def s3
