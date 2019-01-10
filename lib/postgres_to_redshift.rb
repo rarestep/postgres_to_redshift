@@ -57,7 +57,7 @@ class PostgresToRedshift
   end
 
   def self.target_schema
-    @target_schema ||= 'public'
+    @target_schema ||= ENV['POSTGRES_TO_REDSHIFT_TARGET_SCHEMA'] || 'public'
   end
 
   def self.source_connection
