@@ -31,10 +31,11 @@ class PostgresToRedshift
     @target_connection = nil
   end
 
-  def self.update_tables
+  def self.update_tables(tables_to_sync = [])
     update_tables = PostgresToRedshift.new
 
     update_tables.tables.each do |table|
+      next if tables_to_sync.any? && !tables_to_sync.include?(table.to_s)
       target_connection.exec <<-SQL
         CREATE TABLE IF NOT EXISTS #{self.target_schema}.#{table.target_table_name}
         (#{table.columns_for_create})
@@ -57,7 +58,7 @@ class PostgresToRedshift
   end
 
   def self.target_schema
-    @target_schema ||= 'public'
+    @target_schema ||= ENV['POSTGRES_TO_REDSHIFT_TARGET_SCHEMA'] || 'public'
   end
 
   def self.source_connection
@@ -97,7 +98,7 @@ class PostgresToRedshift
   end
 
   def column_definitions(table)
-    source_connection.exec("SELECT * FROM information_schema.columns WHERE table_schema='public' AND table_name='#{table.name}' order by ordinal_position")
+    source_connection.exec("SELECT * FROM information_schema.columns WHERE table_schema='public' AND table_name='#{table.name}' and data_type != 'json' and data_type != 'USER-DEFINED' and data_type != 'jsonb' order by ordinal_position")
   end
 
   def s3
@@ -110,6 +111,7 @@ class PostgresToRedshift
 
   def copy_table(table)
     buffer = Tempfile.new
+    buffer.binmode
     zip = Zlib::GzipWriter.new(buffer)
 
     puts "Downloading #{table}"
@@ -128,7 +130,7 @@ class PostgresToRedshift
   def upload_table(table, path)
     puts "Uploading #{table.target_table_name}"
     bucket.objects["export/#{table.target_table_name}.psv.gz"].delete
-    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(file: path, acl: :authenticated_read)
+    bucket.objects["export/#{table.target_table_name}.psv.gz"].write(file: path, multipart_threshold: 900 * 1024 * 1024)
   end
 
   def import_table(table)
