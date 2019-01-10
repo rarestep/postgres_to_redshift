@@ -110,6 +110,7 @@ class PostgresToRedshift
 
   def copy_table(table)
     buffer = Tempfile.new
+    buffer.binmode
     zip = Zlib::GzipWriter.new(buffer)
 
     puts "Downloading #{table}"
